@@ -48,22 +48,16 @@ jobs:
 
       - name: Fix gradle build versions
         run: |
-          # Force compileSdk and targetSdk to 33, buildTools to 33.0.2
           sed -i 's/compileSdk = .*/compileSdk = 33/' android/app/build.gradle || true
           sed -i 's/compileSdkVersion .*/compileSdkVersion 33/' android/app/build.gradle || true
           sed -i 's/targetSdk = .*/targetSdk = 33/' android/app/build.gradle || true
           sed -i 's/targetSdkVersion .*/targetSdkVersion 33/' android/app/build.gradle || true
           sed -i 's/buildToolsVersion .*/buildToolsVersion "33.0.2"/' android/app/build.gradle || true
           sed -i "s/classpath 'com.android.tools.build:gradle:[^']*'/classpath 'com.android.tools.build:gradle:8.0.2'/" android/build.gradle || true
-          echo "--- app/build.gradle ---"
-          cat android/app/build.gradle
-          echo "--- build.gradle ---"
-          cat android/build.gradle
 
       - name: Fix gradle wrapper version
         run: |
           sed -i 's|gradle-.*-bin.zip|gradle-8.0.2-bin.zip|' android/gradle/wrapper/gradle-wrapper.properties
-          cat android/gradle/wrapper/gradle-wrapper.properties
 
       - name: Sync Capacitor
         run: npx cap sync android
@@ -72,11 +66,14 @@ jobs:
         run: |
           cd android
           chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon --stacktrace 2>&1 | tail -100
+          ./gradlew assembleDebug --no-daemon
+
+      - name: Find APK
+        run: find android -name "*.apk" -type f
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: PanoView-debug-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          path: android/**/*.apk
           retention-days: 30
