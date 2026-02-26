@@ -27,7 +27,7 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      # 4. Android SDK (API 33)
+      # 4. Android SDK
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
@@ -39,26 +39,32 @@ jobs:
       - name: Install npm dependencies
         run: npm install
 
-      # 7. Let Capacitor generate the Android project
+      # 7. Capacitor requires webDir to exist before add — create www and copy index.html
+      - name: Prepare www folder
+        run: |
+          mkdir -p www
+          cp index.html www/index.html
+
+      # 8. Let Capacitor generate the Android project
       - name: Add Android platform
         run: npx cap add android
 
-      # 8. Patch the generated files (share intent, deep links, network config)
+      # 9. Patch the generated files (share intent, deep links, network config)
       - name: Patch Android project
         run: python3 patch_android.py
 
-      # 9. Copy web assets into the Android project
+      # 10. Copy web assets into the Android project
       - name: Sync Capacitor
         run: npx cap sync android
 
-      # 10. Build the debug APK
+      # 11. Build the debug APK
       - name: Build debug APK
         run: |
           cd android
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon --stacktrace
 
-      # 11. Upload the APK as a downloadable artifact
+      # 12. Upload the APK as a downloadable artifact
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
