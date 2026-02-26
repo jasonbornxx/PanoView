@@ -1,7 +1,7 @@
 {
   "appId": "com.panoview.app",
   "appName": "PanoView",
-  "webDir": ".",
+  "webDir": "www",
   "android": {
     "allowMixedContent": true,
     "backgroundColor": "#000000"
