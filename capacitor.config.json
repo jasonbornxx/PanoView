@@ -1,0 +1,19 @@
+{
+  "appId": "com.panoview.app",
+  "appName": "PanoView",
+  "webDir": ".",
+  "android": {
+    "allowMixedContent": true,
+    "backgroundColor": "#000000"
+  },
+  "server": {
+    "allowNavigation": [
+      "*.google.com",
+      "*.googleusercontent.com",
+      "*.googleapis.com",
+      "cdn.jsdelivr.net",
+      "fonts.googleapis.com",
+      "fonts.gstatic.com"
+    ]
+  }
+}
