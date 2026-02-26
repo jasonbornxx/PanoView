@@ -1,0 +1,67 @@
+name: Build PanoView APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:   # lets you trigger manually from the Actions tab
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Get the code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Node.js for Capacitor CLI
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      # 3. Java for Gradle / Android build
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      # 4. Android SDK (API 33)
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      # 5. Accept SDK licenses silently
+      - name: Accept Android licenses
+        run: yes | sdkmanager --licenses || true
+
+      # 6. Install Capacitor packages
+      - name: Install npm dependencies
+        run: npm install
+
+      # 7. Let Capacitor generate the Android project
+      - name: Add Android platform
+        run: npx cap add android
+
+      # 8. Patch the generated files (share intent, deep links, network config)
+      - name: Patch Android project
+        run: python3 patch_android.py
+
+      # 9. Copy web assets into the Android project
+      - name: Sync Capacitor
+        run: npx cap sync android
+
+      # 10. Build the debug APK
+      - name: Build debug APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon --stacktrace
+
+      # 11. Upload the APK as a downloadable artifact
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: PanoView-debug-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 30
