@@ -539,61 +539,38 @@ function extractFromUrl(raw){
 // ═══════════════════════════════════════════
 // Z5 FIX: Fetch exact tile grid from metadata
 // ═══════════════════════════════════════════
-async function fetchSVMeta(panoId) {
+async function fetchSVMeta(panoId, zoom) {
   try {
     const r = await fetch(`https://cbk0.google.com/cbk?output=json&panoid=${encodeURIComponent(panoId)}`);
     if (!r.ok) throw new Error('meta fail');
     const d = await r.json();
-    const w = d.Data?.image_width || d.data?.image_width;
-    const h = d.Data?.image_height || d.data?.image_height;
+    // Metadata always returns Z5 (full resolution) dimensions
+    const fullW = d.Data?.image_width || d.data?.image_width;
+    const fullH = d.Data?.image_height || d.data?.image_height;
     const lat = parseFloat(d.Location?.lat || d.location?.lat || 0);
     const lng = parseFloat(d.Location?.lng || d.location?.lng || 0);
-    if (w && h) {
-      return {cols: Math.ceil(w/TILE), rows: Math.ceil(h/TILE), exactW: w, exactH: h, lat, lng};
+    if (fullW && fullH) {
+      // Scale down to requested zoom level.
+      // Z5 = full res. Each zoom step halves resolution.
+      // zoomLevels: Z5=max, Z4=Z5/2, Z3=Z5/4, Z2=Z5/8, Z1=Z5/16
+      const maxZoom = 5;
+      const scale = Math.pow(2, maxZoom - zoom);
+      const exactW = Math.round(fullW / scale);
+      const exactH = Math.round(fullH / scale);
+      // Tile count = how many 512px tiles needed to cover exactW x exactH
+      const cols = Math.ceil(exactW / TILE);
+      const rows = Math.ceil(exactH / TILE);
+      return {cols, rows, exactW, exactH, lat, lng};
     }
-  } catch(e) {}
-  return {...ZOOM_FALLBACK[selZoomVal], exactW: null, exactH: null};
+  } catch(e) { console.warn('fetchSVMeta failed:', e); }
+  return {...ZOOM_FALLBACK[zoom], exactW: null, exactH: null, lat: 0, lng: 0};
 }
 
-// Auto-crop black/empty edges from canvas
+// autoCrop: canvas is now pre-sized to exact dims, this is just a safety net
+// for edge cases where metadata was unavailable
 function autoCrop(canvas, ctx, exactW, exactH) {
-  if (exactW && exactH && exactW < canvas.width) {
-    const c = document.createElement('canvas');
-    c.width = exactW; c.height = exactH;
-    c.getContext('2d').drawImage(canvas, 0, 0);
-    return {canvas: c, w: exactW, h: exactH};
-  }
-  // Scan from right and bottom edges to find content
-  const w = canvas.width, h = canvas.height;
-  try {
-    const px = ctx.getImageData(0, 0, w, h).data;
-    let cropW = w, cropH = h;
-    // Scan last 1024 cols from right
-    for (let x = w-1; x >= Math.max(0, w-1024); x--) {
-      let found = false;
-      for (let y = 0; y < h; y += 8) {
-        const i = (y*w+x)*4;
-        if (px[i]>5||px[i+1]>5||px[i+2]>5) { found=true; break; }
-      }
-      if (found) { cropW = x+1; break; }
-    }
-    // Scan last 1024 rows from bottom
-    for (let y = h-1; y >= Math.max(0, h-1024); y--) {
-      let found = false;
-      for (let x = 0; x < w; x += 8) {
-        const i = (y*w+x)*4;
-        if (px[i]>5||px[i+1]>5||px[i+2]>5) { found=true; break; }
-      }
-      if (found) { cropH = y+1; break; }
-    }
-    if (cropW < w || cropH < h) {
-      const c = document.createElement('canvas');
-      c.width = cropW; c.height = cropH;
-      c.getContext('2d').drawImage(canvas, 0, 0);
-      return {canvas: c, w: cropW, h: cropH};
-    }
-  } catch(e) {}
-  return {canvas, w, h};
+  // Canvas is already sized correctly if we had metadata — just return it
+  return {canvas, w: canvas.width, h: canvas.height};
 }
 
 // ═══════════════════════════════════════════
@@ -870,7 +847,7 @@ async function downloadSVPano(det) {
   const zoom = selZoomVal;
 
   setStatus(`Fetching tile metadata for Z${zoom}…`, 'info');
-  const meta = await fetchSVMeta(panoId);
+  const meta = await fetchSVMeta(panoId, zoom);
   const {cols, rows, exactW, exactH} = meta;
   const metaLat = meta.lat || coords?.lat || 0;
   const metaLng = meta.lng || coords?.lng || 0;
@@ -890,11 +867,15 @@ async function downloadSVPano(det) {
   }
 
   const canvas = document.createElement('canvas');
-  canvas.width = cols*TILE; canvas.height = rows*TILE;
+  // Size canvas to exact content dimensions (not full tile grid) to avoid black edges
+  // If metadata gave us exact dims use those, else fall back to tile grid size
+  const canvasW = exactW || cols*TILE;
+  const canvasH = exactH || rows*TILE;
+  canvas.width = canvasW; canvas.height = canvasH;
   const ctx = canvas.getContext('2d');
   let done=0, failed=0, idx=0;
 
-  setStatus(`Pano: ${panoId}\nZ${zoom} · ${cols}×${rows} · ${cols*TILE}×${rows*TILE}px`, 'info');
+  setStatus(`Pano: ${panoId}\nZ${zoom} · ${cols}×${rows} tiles · ${canvasW}×${canvasH}px`, 'info');
 
   async function worker() {
     while (idx < total && !cancelRequested) {
@@ -1063,11 +1044,11 @@ async function downloadUserPanoBulk(det, qid) {
 
 async function downloadSVPanoBulk(det, qid) {
   const zoom = selZoomVal;
-  const meta = await fetchSVMeta(det.panoId);
+  const meta = await fetchSVMeta(det.panoId, zoom);
   const {cols,rows,exactW,exactH}=meta;
   const lat=meta.lat||det.coords?.lat||0, lng=meta.lng||det.coords?.lng||0;
   const canvas=document.createElement('canvas');
-  canvas.width=cols*TILE;canvas.height=rows*TILE;
+  canvas.width=exactW||cols*TILE; canvas.height=exactH||rows*TILE;
   const ctx=canvas.getContext('2d');
   const total=cols*rows;
   const loads=[];
