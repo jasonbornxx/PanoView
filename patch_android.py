@@ -143,16 +143,53 @@ for name in ('ic_launcher.xml', 'ic_launcher_round.xml'):
         )
 
 # Color resource for adaptive icon background
+# Capacitor sometimes ships a standalone ic_launcher_background.xml in values/
+# which causes a "Duplicate resources" build error when colors.xml also defines
+# the same color name.  Strategy:
+#   1. Delete any standalone ic_launcher_background.xml
+#   2. Remove the color entry from any other values XML that already has it
+#   3. Ensure colors.xml owns the single definition (overwritten to our dark value)
 values_dir = 'android/app/src/main/res/values'
 os.makedirs(values_dir, exist_ok=True)
+
+LAUNCHER_BG_FILE = os.path.join(values_dir, 'ic_launcher_background.xml')
+if os.path.exists(LAUNCHER_BG_FILE):
+    os.remove(LAUNCHER_BG_FILE)
+    print(f'Removed standalone {LAUNCHER_BG_FILE} (prevents duplicate resource)')
+
+# Strip any existing ic_launcher_background color entry from every other XML in values/
+import glob, re as _re
+for xml_path in glob.glob(os.path.join(values_dir, '*.xml')):
+    if os.path.basename(xml_path) == 'colors.xml':
+        continue  # We'll handle colors.xml separately below
+    with open(xml_path, 'r') as f:
+        content = f.read()
+    if 'ic_launcher_background' in content:
+        cleaned = _re.sub(
+            r'\s*<color[^>]*name=["\']ic_launcher_background["\'][^/]*/?>.*?</color>',
+            '', content, flags=_re.DOTALL)
+        cleaned = _re.sub(
+            r'\s*<color[^>]*name=["\']ic_launcher_background["\'][^>]*/>', '', cleaned)
+        with open(xml_path, 'w') as f:
+            f.write(cleaned)
+        print(f'Removed ic_launcher_background from {xml_path}')
+
+# Now write/update colors.xml with our value (overwrites whatever was there for this key)
 colors_path = os.path.join(values_dir, 'colors.xml')
 if os.path.exists(colors_path):
     with open(colors_path, 'r') as f:
         colors = f.read()
-    if 'ic_launcher_background' not in colors:
-        colors = colors.replace('</resources>', '    <color name="ic_launcher_background">#0A0A0A</color>\n</resources>')
-        with open(colors_path, 'w') as f:
-            f.write(colors)
+    if 'ic_launcher_background' in colors:
+        # Update the existing entry to our dark value
+        colors = _re.sub(
+            r'(<color[^>]*name=["\']ic_launcher_background["\'][^>]*>)[^<]*(</color>)',
+            r'\g<1>#0A0A0A\g<2>', colors)
+    else:
+        colors = colors.replace(
+            '</resources>',
+            '    <color name="ic_launcher_background">#0A0A0A</color>\n</resources>')
+    with open(colors_path, 'w') as f:
+        f.write(colors)
 else:
     with open(colors_path, 'w') as f:
         f.write(
