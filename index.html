@@ -413,7 +413,7 @@ let bulkRunning = false;
 const TILE = 512;
 const ZOOM_FALLBACK = {
   1:{cols:2,rows:1}, 2:{cols:4,rows:2}, 3:{cols:8,rows:4},
-  4:{cols:16,rows:8}, 5:{cols:26,rows:13}
+  4:{cols:16,rows:8}, 5:{cols:32,rows:16}
 };
 
 // ═══════════════════════════════════════════
@@ -544,25 +544,32 @@ async function fetchSVMeta(panoId, zoom) {
     const r = await fetch(`https://cbk0.google.com/cbk?output=json&panoid=${encodeURIComponent(panoId)}`);
     if (!r.ok) throw new Error('meta fail');
     const d = await r.json();
-    // Metadata always returns Z5 (full resolution) dimensions
-    const fullW = d.Data?.image_width || d.data?.image_width;
-    const fullH = d.Data?.image_height || d.data?.image_height;
     const lat = parseFloat(d.Location?.lat || d.location?.lat || 0);
     const lng = parseFloat(d.Location?.lng || d.location?.lng || 0);
+
+    // Prefer world_size from tiles array — this gives exact dims per zoom level
+    // tiles[0] = Z1, tiles[1] = Z2 ... tiles[4] = Z5
+    const tiles = d.Data?.tiles || d.data?.tiles;
+    if (tiles && tiles[zoom - 1]) {
+      const t = tiles[zoom - 1];
+      const exactW = t.world_size?.width || t.worldSize?.width;
+      const exactH = t.world_size?.height || t.worldSize?.height;
+      if (exactW && exactH) {
+        return {cols: Math.ceil(exactW/TILE), rows: Math.ceil(exactH/TILE), exactW, exactH, lat, lng};
+      }
+    }
+
+    // Fallback: metadata returns Z5 full-res dimensions, scale down to requested zoom
+    const fullW = d.Data?.image_width || d.data?.image_width;
+    const fullH = d.Data?.image_height || d.data?.image_height;
     if (fullW && fullH) {
-      // Scale down to requested zoom level.
-      // Z5 = full res. Each zoom step halves resolution.
-      // zoomLevels: Z5=max, Z4=Z5/2, Z3=Z5/4, Z2=Z5/8, Z1=Z5/16
-      const maxZoom = 5;
-      const scale = Math.pow(2, maxZoom - zoom);
+      const scale = Math.pow(2, 5 - zoom); // Z5=÷1, Z4=÷2, Z3=÷4, Z2=÷8, Z1=÷16
       const exactW = Math.round(fullW / scale);
       const exactH = Math.round(fullH / scale);
-      // Tile count = how many 512px tiles needed to cover exactW x exactH
-      const cols = Math.ceil(exactW / TILE);
-      const rows = Math.ceil(exactH / TILE);
-      return {cols, rows, exactW, exactH, lat, lng};
+      return {cols: Math.ceil(exactW/TILE), rows: Math.ceil(exactH/TILE), exactW, exactH, lat, lng};
     }
   } catch(e) { console.warn('fetchSVMeta failed:', e); }
+  // Hard fallback — metadata unavailable, use corrected static grid
   return {...ZOOM_FALLBACK[zoom], exactW: null, exactH: null, lat: 0, lng: 0};
 }
 
