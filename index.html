@@ -720,6 +720,18 @@ async function canvasToJpeg(canvas, q) {
 }
 
 function saveBytes(bytes, name) {
+  // On Android app: use native bridge to save to Pictures/PanoView (shows in gallery)
+  if (window.AndroidSave) {
+    let binary = '';
+    const chunk = 8192;
+    for (let i = 0; i < bytes.length; i += chunk) {
+      binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
+    }
+    const b64 = 'data:image/jpeg;base64,' + btoa(binary);
+    window.AndroidSave.saveImage(b64, name);
+    return;
+  }
+  // Browser fallback
   const blob = new Blob([bytes],{type:'image/jpeg'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
