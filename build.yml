@@ -1,0 +1,101 @@
+name: Build PanoView APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK build tools and platforms
+        run: |
+          yes | sdkmanager --licenses || true
+          sdkmanager "platforms;android-33" "build-tools;33.0.2" "platform-tools"
+
+      # CI FIX: Cache npm dependencies — keyed on package-lock.json
+      # Saves ~1-2 min per build by skipping re-download of node_modules
+      - name: Cache npm dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-
+
+      - name: Install npm dependencies
+        run: npm install
+
+      - name: Prepare www folder
+        run: |
+          mkdir -p www
+          cp index.html www/index.html
+
+      - name: Add Android platform
+        run: npx cap add android
+
+      - name: Patch Android project
+        run: python3 patch_android.py
+
+      - name: Fix gradle build versions
+        run: |
+          sed -i 's/compileSdk = .*/compileSdk = 33/' android/app/build.gradle || true
+          sed -i 's/compileSdkVersion .*/compileSdkVersion 33/' android/app/build.gradle || true
+          sed -i 's/targetSdk = .*/targetSdk = 33/' android/app/build.gradle || true
+          sed -i 's/targetSdkVersion .*/targetSdkVersion 33/' android/app/build.gradle || true
+          sed -i 's/buildToolsVersion .*/buildToolsVersion "33.0.2"/' android/app/build.gradle || true
+          sed -i "s/classpath 'com.android.tools.build:gradle:[^']*'/classpath 'com.android.tools.build:gradle:8.0.2'/" android/build.gradle || true
+
+      - name: Fix gradle wrapper version
+        run: |
+          sed -i 's|gradle-.*-bin.zip|gradle-8.0.2-bin.zip|' android/gradle/wrapper/gradle-wrapper.properties
+
+      # CI FIX: Cache Gradle files — keyed on build.gradle contents
+      # Saves ~3-5 min per build by reusing downloaded dependencies and wrapper
+      - name: Cache Gradle dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Sync Capacitor
+        run: npx cap sync android
+
+      - name: Build debug APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+
+      - name: Find APK
+        run: find android -name "*.apk" -type f
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: PanoView-debug-apk
+          path: android/**/*.apk
+          retention-days: 30

@@ -63,7 +63,6 @@ header{
   width:100%;max-width:520px;padding:28px 20px 0;
   display:flex;align-items:center;gap:14px;
 }
-/* Flat SVG logo — matches launcher icon style */
 .logo-icon{
   width:56px;height:56px;flex-shrink:0;
   border-radius:14px;overflow:hidden;
@@ -79,7 +78,7 @@ header{
 
 /* ── Tabs ── */
 .tabs{
-  width:100%;max-width:520px;display:flex;gap:0;margin:20px 20px 0;
+  display:flex;gap:0;margin:20px 20px 0;
   width:calc(100% - 40px);max-width:480px;
   border:1px solid var(--border);border-radius:10px;overflow:hidden;
 }
@@ -111,7 +110,6 @@ textarea{
 }
 textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,207,255,.08);}
 #urlInput{height:76px;}
-#step2Input{height:60px;}
 #bulkInput{height:140px;}
 .clear-btn{
   position:absolute;right:12px;top:13px;background:none;border:none;
@@ -135,70 +133,6 @@ textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,207,255,.0
 .badge-user .dot{background:var(--purple);}
 .badge-warn{background:rgba(255,171,0,.06);border:1px solid rgba(255,171,0,.2);color:var(--warn);}
 .badge-warn .dot{background:var(--warn);}
-
-/* ── Maps step-2 box ── */
-.maps-box{
-  display:none;background:rgba(0,207,255,.03);border:1px solid rgba(0,207,255,.12);
-  border-radius:10px;padding:14px;margin-bottom:14px;
-}
-.maps-box.show{display:block;}
-.maps-box-title{
-  font-family:'DM Mono',monospace;font-size:.6rem;color:var(--muted);
-  text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;
-}
-.maps-btns{display:flex;gap:8px;margin-bottom:10px;}
-.maps-open{
-  flex:1;background:var(--accent);color:#000;border:none;border-radius:8px;
-  font-family:'DM Sans',sans-serif;font-weight:700;font-size:.8rem;
-  padding:10px;cursor:pointer;transition:.2s;
-}
-.maps-open:hover{opacity:.85;}
-.maps-copylink{
-  flex:1;display:flex;align-items:center;justify-content:center;
-  border:1px solid rgba(0,207,255,.3);border-radius:8px;color:var(--accent);
-  font-family:'DM Mono',monospace;font-size:.65rem;padding:10px;
-  text-decoration:none;transition:.2s;text-align:center;
-}
-.maps-copylink:hover{background:rgba(0,207,255,.07);}
-.maps-inst{font-family:'DM Mono',monospace;font-size:.6rem;color:var(--muted);line-height:1.6;}
-.maps-inst strong{color:var(--warn);}
-.step2-wrap{margin-top:10px;}
-.step2-label{
-  font-family:'DM Mono',monospace;font-size:.58rem;color:var(--warn);
-  text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;display:block;
-}
-
-/* ── Token fetching overlay ── */
-#tokenOverlay{
-  display:none;position:fixed;inset:0;z-index:900;
-  background:rgba(0,0,0,.6);backdrop-filter:blur(4px);
-  align-items:flex-end;justify-content:center;
-}
-#tokenOverlay.show{display:flex;}
-.token-sheet{
-  width:100%;max-width:520px;background:var(--s1);
-  border:1px solid var(--border);border-radius:16px 16px 0 0;
-  padding:20px 20px 32px;
-}
-.token-sheet-title{
-  font-family:'DM Mono',monospace;font-size:.65rem;color:var(--accent);
-  text-transform:uppercase;letter-spacing:.12em;margin-bottom:12px;
-}
-.token-progress{
-  display:flex;align-items:center;gap:12px;margin-bottom:8px;
-}
-.token-spin{
-  width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--accent);
-  border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0;
-}
-.token-msg{font-family:'DM Mono',monospace;font-size:.65rem;color:var(--text);}
-.token-sub{font-family:'DM Mono',monospace;font-size:.58rem;color:var(--muted);margin-top:6px;}
-.token-cancel{
-  width:100%;margin-top:14px;background:none;border:1px solid var(--border);
-  color:var(--muted);font-family:'DM Sans',sans-serif;font-size:.85rem;
-  padding:11px;border-radius:10px;cursor:pointer;transition:.2s;
-}
-.token-cancel:hover{border-color:var(--red);color:var(--red);}
 
 /* ── Action row ── */
 .action-row{display:flex;gap:8px;margin-bottom:14px;}
@@ -327,30 +261,12 @@ textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,207,255,.0
   <div id="pannellumContainer" style="padding-top:52px;height:100%;"></div>
 </div>
 
-<!-- Token Fetching Overlay (shown while Android WebView polls for token) -->
-<div id="tokenOverlay">
-  <div class="token-sheet">
-    <div class="token-sheet-title">🔍 Fetching Image Token</div>
-    <div class="token-progress">
-      <div class="token-spin"></div>
-      <div class="token-msg" id="tokenMsg">Opening Maps in background…</div>
-    </div>
-    <div class="token-sub" id="tokenSub">This may take up to 15 seconds. The app is loading Street View to extract the image URL.</div>
-    <button class="token-cancel" onclick="cancelTokenFetch()">✕ Cancel — Open Manually Instead</button>
-  </div>
-</div>
-
 <header>
-  <!-- Flat SVG logo — consistent with launcher icon -->
   <svg class="logo-icon" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
     <rect width="56" height="56" rx="13" fill="#0A0A0A"/>
-    <!-- Outer ring -->
     <circle cx="28" cy="28" r="20" stroke="#00CFFF" stroke-width="3.2" fill="none"/>
-    <!-- Iris ring -->
     <circle cx="28" cy="28" r="13" stroke="#00CFFF" stroke-width="2" fill="none" opacity="0.6"/>
-    <!-- Pupil -->
     <circle cx="28" cy="28" r="5.5" fill="#00CFFF"/>
-    <!-- Lens glint -->
     <circle cx="31" cy="25" r="1.8" fill="white" opacity="0.7"/>
   </svg>
   <div class="logo-text">
@@ -384,26 +300,6 @@ textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,207,255,.0
     <div class="badge badge-warn" id="badgeCoords">
       <div class="dot"></div>
       <div class="btext" id="coordsText">Only coordinates found.</div>
-    </div>
-
-    <!-- Maps step-2 box (shown as fallback when no Android bridge) -->
-    <div class="maps-box" id="mapsBox">
-      <div class="maps-box-title">🔗 Open in Google Maps to get download URL</div>
-      <div class="maps-btns">
-        <button class="maps-open" onclick="openInMaps()">↗ Open in Maps</button>
-        <a class="maps-copylink" id="mapsLink" href="#" target="_blank">Copy / Open Link</a>
-      </div>
-      <div class="maps-inst">
-        <strong>After Maps loads:</strong> wait for Street View to fully open,
-        then copy the URL from the address bar and paste it below.
-      </div>
-      <div class="step2-wrap">
-        <label class="step2-label">Step 2 — Paste the Maps URL here</label>
-        <textarea class="step2-input" id="step2Input"
-          placeholder="https://www.google.com/maps/@…!6shttps:%2F%2Flh3…"
-          autocomplete="off" autocorrect="off" spellcheck="false"
-          oninput="onStep2Change()"></textarea>
-      </div>
     </div>
 
     <!-- Preview button -->
@@ -462,14 +358,12 @@ textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,207,255,.0
 let cancelRequested = false;
 let selZoomVal = 3;
 let currentDet = null;
-let currentMapsUrl = null;
 let pannViewer = null;
 let bulkQueue = [];
 let bulkRunning = false;
-
-// Token fetch state
-let _tokenResolve = null;
-let _tokenReject = null;
+// FIX #4: single object replaces two separate _tokenResolve/_tokenReject vars
+// prevents stuck promise when Android calls back after user already cancelled
+let _activeTokenFetch = null;
 
 const TILE = 512;
 const ZOOM_FALLBACK = {
@@ -481,9 +375,9 @@ const ZOOM_FALLBACK = {
 // TAB
 // ═══════════════════════════════════════════
 function switchTab(t) {
-  document.querySelectorAll('.tab').forEach((b,i)=>b.classList.toggle('active', (i===0&&t==='single')||(i===1&&t==='bulk')));
-  document.getElementById('singleTab').classList.toggle('hidden', t!=='single');
-  document.getElementById('bulkTab').classList.toggle('hidden', t!=='bulk');
+  document.querySelectorAll('.tab').forEach((b,i)=>b.classList.toggle('active',(i===0&&t==='single')||(i===1&&t==='bulk')));
+  document.getElementById('singleTab').classList.toggle('hidden',t!=='single');
+  document.getElementById('bulkTab').classList.toggle('hidden',t!=='bulk');
 }
 
 // ═══════════════════════════════════════════
@@ -599,60 +493,57 @@ function extractFromUrl(raw){
 
 // ═══════════════════════════════════════════
 // TOKEN FETCHER — Android WebView bridge
+//
+// FIX #1: HTML overlay removed entirely.
+//   Android shows its own native bottom-sheet — no double overlay.
+// FIX #2: openInMaps / showMapsBox / onStep2Change removed (dead code).
+// FIX #4: _activeTokenFetch single object — no stuck promise on late callback.
 // ═══════════════════════════════════════════
 
-// Called by Android MainActivity after polling succeeds or times out
+// Called by Android MainActivity after polling finds token or times out.
+// If _activeTokenFetch is null (user already cancelled), the result is
+// safely discarded — no stuck promise, no silent hang.
 window._panoTokenResult = function(token, error) {
-  hideTokenOverlay();
-  if (token && _tokenResolve) {
-    _tokenResolve(token);
-  } else if (_tokenReject) {
-    _tokenReject(new Error(error || 'token_not_found'));
-  }
-  _tokenResolve = null;
-  _tokenReject = null;
+  if (!_activeTokenFetch) return; // stale callback — discard safely
+  const {resolve, reject} = _activeTokenFetch;
+  _activeTokenFetch = null;
+  if (token) resolve(token);
+  else reject(new Error(error || 'token_not_found'));
 };
 
-function showTokenOverlay(msg) {
-  document.getElementById('tokenMsg').textContent = msg || 'Opening Maps in background…';
-  document.getElementById('tokenOverlay').classList.add('show');
-}
-
-function hideTokenOverlay() {
-  document.getElementById('tokenOverlay').classList.remove('show');
-}
-
-function cancelTokenFetch() {
-  hideTokenOverlay();
-  if (_tokenReject) { _tokenReject(new Error('cancelled')); }
-  _tokenResolve = null; _tokenReject = null;
-}
-
-/**
- * Try to fetch a lh3 token for a CI... pano via the Android TokenFetcher bridge.
- * Returns the lh3 URL string on success, throws on failure/timeout.
- * Falls back gracefully if AndroidTokenFetcher bridge is not available.
- */
+// No UI calls inside — both single and bulk contexts can call this safely.
+// Android shows its own bottom-sheet; this function just manages the Promise.
 function fetchTokenViaAndroid(mapsUrl) {
   return new Promise((resolve, reject) => {
     if (!window.AndroidTokenFetcher) {
       reject(new Error('no_bridge'));
       return;
     }
-    _tokenResolve = resolve;
-    _tokenReject = reject;
-    showTokenOverlay('Opening Maps to extract image token…');
-    // Kick off the Android WebView
+    _activeTokenFetch = {resolve, reject};
     window.AndroidTokenFetcher.fetch(mapsUrl);
-    // Safety timeout in JS as a belt-and-suspenders fallback
+    // Belt-and-suspenders JS timeout in case Android never calls back
     setTimeout(() => {
-      if (_tokenResolve || _tokenReject) {
-        hideTokenOverlay();
-        _tokenResolve = null; _tokenReject = null;
+      if (_activeTokenFetch) {
+        _activeTokenFetch = null;
         reject(new Error('timeout'));
       }
     }, 18000);
   });
+}
+
+// ═══════════════════════════════════════════
+// BUILD MAPS URL (still used by token fetcher)
+// ═══════════════════════════════════════════
+function buildMapsUrl(det) {
+  if(!det)return null;
+  const lat=(det.coords?.lat)||0, lng=(det.coords?.lng)||0;
+  const h=((det.heading)||0).toFixed(2), t=((det.tilt)||90).toFixed(2);
+  const id=det.panoId;
+  if(id&&isUserPanoId(id))
+    return `https://www.google.com/maps/@${lat},${lng},3a,75y,${h}h,${t}t/data=!3m6!1e1!3m4!1s${encodeURIComponent(id)}!2e10!7i8000!8i4000`;
+  if(id)
+    return `https://www.google.com/maps/@${lat},${lng},3a,75y,${h}h,${t}t/data=!3m4!1e1!3m2!1s${encodeURIComponent(id)}!2e0`;
+  return `https://www.google.com/maps/@${lat},${lng},3a,75y,${h}h,${t}t`;
 }
 
 // ═══════════════════════════════════════════
@@ -686,6 +577,8 @@ async function fetchSVMeta(panoId, zoom) {
   return {...ZOOM_FALLBACK[zoom], exactW: null, exactH: null, lat: 0, lng: 0};
 }
 
+// No-op crop: canvas is already created at exactW/exactH so no trimming needed.
+// Only produces black bars when metadata API fails (exactW/H null) which is rare.
 function autoCrop(canvas, ctx, exactW, exactH) {
   return {canvas, w: canvas.width, h: canvas.height};
 }
@@ -833,7 +726,6 @@ async function startPreview() {
   modal.classList.add('open');
   loading.classList.remove('hidden');
   if (pannViewer) { try{pannViewer.destroy();}catch(e){} pannViewer=null; }
-
   try {
     let imageUrl = null;
     if (currentDet.panoType === 'sv') {
@@ -900,34 +792,33 @@ function closePreview() {
 
 // ═══════════════════════════════════════════
 // DOWNLOAD — USER PANO
+// FIX #1: No showMapsBox fallback — auto-fetch only, clear error if it fails
 // ═══════════════════════════════════════════
 async function downloadUserPano(det) {
   const {panoId, coords} = det;
   let {lh3Url} = det;
   const lat = coords?.lat || 0, lng = coords?.lng || 0;
 
-  // If it's a CI... pano with no lh3Url — try the Android token fetcher first
+  // Auto-fetch token via Android bridge if no direct URL available
   if (!lh3Url && isUserPanoId(panoId) && window.AndroidTokenFetcher) {
     const mapsUrl = buildMapsUrl(det);
     if (mapsUrl) {
       try {
-        setStatus('Opening Maps to retrieve image token…', 'info');
+        setStatus('Opening Maps to extract image token…\nThis may take up to 15 seconds.', 'info');
         const token = await fetchTokenViaAndroid(mapsUrl);
-        // token is the raw lh3 URL extracted from !6s
         lh3Url = cleanLh3Url(token);
-        // Update currentDet so preview also works
+        // Update currentDet so preview also works after token fetch
         if (det === currentDet) currentDet.lh3Url = lh3Url;
         setStatus('Token found! Fetching full-res image…', 'info');
       } catch(e) {
         const reason = e.message;
         if (reason === 'cancelled') {
           setStatus('Token fetch cancelled.', 'warn');
-          showMapsBox(det);
-          return false;
+        } else if (reason === 'no_bridge') {
+          setStatus('Auto token fetch not available outside the app.', 'error');
+        } else {
+          setStatus('Could not auto-fetch token: ' + reason + '\nTry again or check connection.', 'error');
         }
-        // timeout or no_bridge — fall through to manual method
-        setStatus('Could not auto-fetch token (' + reason + ').\nPlease use the manual method below.', 'warn');
-        showMapsBox(det);
         return false;
       }
     }
@@ -960,6 +851,7 @@ async function downloadUserPano(det) {
       return true;
     } catch(e) { continue; }
   }
+  setStatus('Could not fetch image. The panorama may be private or the token expired.', 'error');
   return false;
 }
 
@@ -976,6 +868,7 @@ function loadImgBytes(bytes) {
 
 // ═══════════════════════════════════════════
 // DOWNLOAD — STREET VIEW TILE STITCH
+// FIX #8: Retry pass for failed tiles after initial download
 // ═══════════════════════════════════════════
 async function downloadSVPano(det) {
   const {panoId, coords, heading} = det;
@@ -1034,6 +927,36 @@ async function downloadSVPano(det) {
   await Promise.all(Array.from({length:8}, ()=>worker()));
   if (cancelRequested) return;
 
+  // FIX #8: Retry pass — attempt each failed tile once more
+  if (failed > 0) {
+    const failedIndices = cells.reduce((acc,c,i)=>{
+      if(c.className==='tile-cell fail') acc.push(i); return acc;
+    },[]);
+    document.getElementById('progLabel').textContent = `Retrying ${failedIndices.length} failed tile(s)…`;
+    let retryFixed = 0;
+    for (const i of failedIndices) {
+      if (cancelRequested) break;
+      const x = i%cols, y = Math.floor(i/cols);
+      cells[i].className = 'tile-cell loading';
+      const res = await new Promise(resolve=>{
+        const img=new Image(); img.crossOrigin='anonymous';
+        img.onload=()=>resolve({ok:true,img});
+        img.onerror=()=>resolve({ok:false});
+        img.src=`https://cbk0.google.com/cbk?output=tile&panoid=${encodeURIComponent(panoId)}&zoom=${zoom}&x=${x}&y=${y}`;
+      });
+      if (res.ok) {
+        ctx.drawImage(res.img,x*TILE,y*TILE,TILE,TILE);
+        cells[i].className='tile-cell done';
+        failed--; retryFixed++;
+      } else {
+        cells[i].className='tile-cell fail';
+      }
+    }
+    if (retryFixed > 0)
+      document.getElementById('progLabel').textContent =
+        `${done}/${total} tiles · ${failed} failed · ${retryFixed} recovered`;
+  }
+
   document.getElementById('dlBtn').disabled = false;
   document.getElementById('cancelBtn').classList.remove('show');
 
@@ -1042,7 +965,7 @@ async function downloadSVPano(det) {
     return;
   }
 
-  setStatus('Stitching done. Auto-cropping and injecting metadata…', 'success');
+  setStatus('Stitching done. Injecting metadata…', 'success');
   const cropped = autoCrop(canvas, ctx, exactW, exactH);
   const {canvas: finalCanvas, w, h} = cropped;
   const fname = `panoview_sv_${panoId.slice(0,18)}_z${zoom}.jpg`;
@@ -1109,8 +1032,21 @@ function updateQueueItem(id) {
   if (!el) return;
   const statusEl = el.querySelector('.qi-status');
   if (statusEl) { statusEl.className=`qi-status ${item.status}`; statusEl.textContent=item.status.toUpperCase(); }
+  const msgEl = el.querySelector('[data-msg]');
+  // Re-render msg row if it exists or needs to be added
+  let msgRow = el.querySelector('.qi-msg');
+  if (item.msg) {
+    if (!msgRow) {
+      msgRow = document.createElement('div');
+      msgRow.className = 'qi-msg';
+      msgRow.style.cssText = "font-family:'DM Mono',monospace;font-size:.58rem;color:var(--muted);margin-top:4px";
+      el.appendChild(msgRow);
+    }
+    msgRow.textContent = item.msg;
+  }
 }
 
+// FIX #7 (bulk): wrap in try/finally so bulkRunning always resets
 async function bulkDownloadAll() {
   if (bulkRunning) return;
   bulkRunning = true;
@@ -1118,42 +1054,71 @@ async function bulkDownloadAll() {
   btn.textContent = '⏳ Downloading…'; btn.disabled = true;
   const bulkStat = document.getElementById('bulkStatus');
   bulkStat.className='status-bar show info';
-  for (const item of bulkQueue) {
-    if (item.status === 'done') continue;
-    const det = item.det;
-    if (!det || !det.panoId) {
-      item.status='skipped'; item.msg='No pano ID found'; updateQueueItem(item.id); continue;
-    }
-    item.status='fetching'; updateQueueItem(item.id);
-    bulkStat.textContent = `Downloading ${item.id+1}/${bulkQueue.length}…`;
-    try {
-      if (det.panoType === 'user') {
-        const ok = await downloadUserPanoBulk(det, item.id);
-        item.status = ok ? 'done' : 'error';
-        item.msg = ok ? 'Downloaded ✓' : 'Could not fetch image';
-      } else {
-        await downloadSVPanoBulk(det, item.id);
-        item.status = 'done'; item.msg = 'Downloaded ✓';
+
+  try {
+    for (const item of bulkQueue) {
+      if (item.status === 'done') continue;
+      const det = item.det;
+      if (!det || !det.panoId) {
+        item.status='skipped'; item.msg='No pano ID found'; updateQueueItem(item.id); continue;
       }
-    } catch(e) {
-      item.status='error'; item.msg = e.message;
+      item.status='fetching'; updateQueueItem(item.id);
+      bulkStat.textContent = `Downloading ${item.id+1}/${bulkQueue.length}…`;
+      try {
+        if (det.panoType === 'user') {
+          const ok = await downloadUserPanoBulk(det, item.id);
+          item.status = ok ? 'done' : 'error';
+          item.msg = ok ? 'Downloaded ✓' : item.msg || 'Could not fetch image';
+        } else {
+          await downloadSVPanoBulk(det, item.id);
+          item.status = 'done'; item.msg = 'Downloaded ✓';
+        }
+      } catch(e) {
+        item.status='error'; item.msg = e.message;
+      }
+      updateQueueItem(item.id);
+      await new Promise(r=>setTimeout(r,500));
     }
-    updateQueueItem(item.id);
-    await new Promise(r=>setTimeout(r,500));
+  } finally {
+    // FIX #7: always reset even if an exception escapes
+    bulkRunning = false;
+    btn.textContent='⬇ Download All'; btn.disabled=false;
   }
-  bulkRunning = false;
-  btn.textContent='⬇ Download All'; btn.disabled=false;
+
   const done = bulkQueue.filter(i=>i.status==='done').length;
   bulkStat.className=`status-bar show ${done===bulkQueue.length?'success':'warn'}`;
   bulkStat.textContent = `Complete: ${done}/${bulkQueue.length} downloaded.`;
 }
 
+// FIX #3: User pano bulk now fetches token via Android bridge for CI... panos
 async function downloadUserPanoBulk(det, qid) {
-  const {panoId, lh3Url, coords} = det;
+  const item = bulkQueue.find(i=>i.id===qid);
+  const {panoId, coords} = det;
+  let {lh3Url} = det;
   const lat=coords?.lat||0, lng=coords?.lng||0;
+
+  // Token fetch for CI... panos without a direct URL — mirrors single-download logic
+  if (!lh3Url && isUserPanoId(panoId) && window.AndroidTokenFetcher) {
+    const mapsUrl = buildMapsUrl(det);
+    if (mapsUrl) {
+      try {
+        if (item) { item.msg='Fetching token…'; updateQueueItem(qid); }
+        const token = await fetchTokenViaAndroid(mapsUrl);
+        lh3Url = cleanLh3Url(token);
+        det.lh3Url = lh3Url; // cache so retry works
+        if (item) { item.msg='Token found, downloading…'; updateQueueItem(qid); }
+      } catch(e) {
+        if (item) { item.msg='Token fetch failed: ' + e.message; }
+        return false;
+      }
+    }
+  }
+
   const tryUrls=[];
   if(lh3Url)tryUrls.push({url:lh3Url});
   tryUrls.push({url:`https://lh3.googleusercontent.com/p/${encodeURIComponent(panoId)}=w16000-h8000-k-no`});
+  tryUrls.push({url:`https://lh3.googleusercontent.com/p/${encodeURIComponent(panoId)}=w8000-h4000-k-no`});
+
   for(const{url}of tryUrls){
     try{
       const r=await fetch(url);if(!r.ok)continue;
@@ -1168,6 +1133,8 @@ async function downloadUserPanoBulk(det, qid) {
   return false;
 }
 
+// FIX #7: Street View bulk now uses 8-worker pool (was Promise.all of ALL tiles)
+// FIX #8: Retry pass for failed tiles
 async function downloadSVPanoBulk(det, qid) {
   const zoom = selZoomVal;
   const meta = await fetchSVMeta(det.panoId, zoom);
@@ -1177,16 +1144,37 @@ async function downloadSVPanoBulk(det, qid) {
   canvas.width=exactW||cols*TILE; canvas.height=exactH||rows*TILE;
   const ctx=canvas.getContext('2d');
   const total=cols*rows;
-  const loads=[];
-  for(let y=0;y<rows;y++)for(let x=0;x<cols;x++){
-    loads.push(new Promise(res=>{
-      const img=new Image();img.crossOrigin='anonymous';
-      img.onload=()=>{ctx.drawImage(img,x*TILE,y*TILE,TILE,TILE);res();};
-      img.onerror=()=>res();
-      img.src=`https://cbk0.google.com/cbk?output=tile&panoid=${encodeURIComponent(det.panoId)}&zoom=${zoom}&x=${x}&y=${y}`;
-    }));
+  let idx=0;
+  const failedTiles=[];
+
+  async function worker() {
+    while (idx < total) {
+      const i = idx++;
+      const x=i%cols, y=Math.floor(i/cols);
+      const res = await new Promise(resolve=>{
+        const img=new Image();img.crossOrigin='anonymous';
+        img.onload=()=>resolve({ok:true,img,x,y});
+        img.onerror=()=>resolve({ok:false,x,y});
+        img.src=`https://cbk0.google.com/cbk?output=tile&panoid=${encodeURIComponent(det.panoId)}&zoom=${zoom}&x=${x}&y=${y}`;
+      });
+      if(res.ok) ctx.drawImage(res.img,x*TILE,y*TILE,TILE,TILE);
+      else failedTiles.push({x,y});
+    }
   }
-  await Promise.all(loads);
+
+  // 8 concurrent workers — same as single download
+  await Promise.all(Array.from({length:8},()=>worker()));
+
+  // Retry failed tiles once
+  for(const{x,y}of failedTiles){
+    await new Promise(resolve=>{
+      const img=new Image();img.crossOrigin='anonymous';
+      img.onload=()=>{ctx.drawImage(img,x*TILE,y*TILE,TILE,TILE);resolve();};
+      img.onerror=()=>resolve();
+      img.src=`https://cbk0.google.com/cbk?output=tile&panoid=${encodeURIComponent(det.panoId)}&zoom=${zoom}&x=${x}&y=${y}`;
+    });
+  }
+
   const{canvas:fc,w,h}=autoCrop(canvas,ctx,exactW,exactH);
   const jb=await canvasToJpeg(fc,0.95);
   const out=injectMetadata(jb,w,h,lat,lng);
@@ -1208,13 +1196,8 @@ async function startDownload() {
   document.getElementById('progressSection').classList.remove('show');
   if (currentDet.panoType === 'user') {
     document.getElementById('dlBtn').disabled = true;
-    const ok = await downloadUserPano(currentDet);
+    await downloadUserPano(currentDet);
     document.getElementById('dlBtn').disabled = false;
-    if (!ok && !window.AndroidTokenFetcher) {
-      // No Android bridge — show manual fallback
-      showMapsBox(currentDet);
-      setStatus('Could not fetch directly.\n1. Tap "Open in Maps" above\n2. Wait for Street View to load\n3. Copy the full address bar URL\n4. Paste in Step 2 field', 'warn');
-    }
   } else {
     await downloadSVPano(currentDet);
   }
@@ -1243,59 +1226,22 @@ function cancelDownload() {
   document.getElementById('cancelBtn').classList.remove('show');
   document.getElementById('progressSection').classList.remove('show');
 }
-function buildMapsUrl(det) {
-  if(!det)return null;
-  const lat=(det.coords?.lat)||0, lng=(det.coords?.lng)||0;
-  const h=((det.heading)||0).toFixed(2), t=((det.tilt)||90).toFixed(2);
-  const id=det.panoId;
-  if(id&&isUserPanoId(id))
-    return `https://www.google.com/maps/@${lat},${lng},3a,75y,${h}h,${t}t/data=!3m6!1e1!3m4!1s${encodeURIComponent(id)}!2e10!7i8000!8i4000`;
-  if(id)
-    return `https://www.google.com/maps/@${lat},${lng},3a,75y,${h}h,${t}t/data=!3m4!1e1!3m2!1s${encodeURIComponent(id)}!2e0`;
-  return `https://www.google.com/maps/@${lat},${lng},3a,75y,${h}h,${t}t`;
-}
-function showMapsBox(det) {
-  const url=buildMapsUrl(det);if(!url)return;
-  currentMapsUrl=url;
-  document.getElementById('mapsLink').href=url;
-  document.getElementById('mapsBox').classList.add('show');
-}
-function openInMaps() {
-  if(!currentMapsUrl)return;
-  const w=window.open(currentMapsUrl,'_blank');
-  if(!w)setStatus('Popup blocked — use the Copy / Open Link button.','warn');
-}
-function onStep2Change() {
-  const val=document.getElementById('step2Input').value.trim();if(!val)return;
-  const r=extractFromUrl(val);
-  if(!r){setStatus('Could not parse this Maps URL. Copy the full address bar URL after Street View loads.','error');return;}
-  if(r.lh3Url){
-    currentDet=r;
-    setStatus('Token found. Press Download to fetch the full-res image.','success');
-    const btn=document.getElementById('dlBtn');
-    btn.className='dl-btn user';btn.textContent='⬇ Download User Panorama (Full-Res)';
-    document.getElementById('previewBtn').classList.add('show');
-  } else if(r.panoId&&r.panoType==='sv'){
-    currentDet=r; setStatus('Official Street View pano from Maps URL.','info');
-    document.getElementById('zoomWrap').classList.remove('dim');
-    const btn=document.getElementById('dlBtn');
-    btn.className='dl-btn';btn.textContent='⬇ Download Panorama (Tile Stitch)';
-    document.getElementById('previewBtn').classList.add('show');
-  } else {
-    setStatus('Pano found but no image token yet. Wait for Street View to fully load.','warn');
-  }
-}
+
 function onUrlChange() {
   const val=document.getElementById('urlInput').value;
-  ['badgeSV','badgeUser','badgeCoords','mapsBox'].forEach(id=>
+  ['badgeSV','badgeUser','badgeCoords'].forEach(id=>
     document.getElementById(id).classList.remove('show'));
-  hideStatus(); currentDet=null; currentMapsUrl=null;
+  hideStatus(); currentDet=null;
   document.getElementById('previewBtn').classList.remove('show');
 
-  if(!val.trim()){
+  // Reset button to default enabled state
+  const btn=document.getElementById('dlBtn');
+  btn.className='dl-btn';
+  btn.textContent='⬇ Download Full-Res Panorama';
+  btn.disabled=false;
+
+  if(!val.trim()) {
     document.getElementById('zoomWrap').classList.remove('dim');
-    const btn=document.getElementById('dlBtn');
-    btn.className='dl-btn';btn.textContent='⬇ Download Full-Res Panorama';
     return;
   }
   const r=extractFromUrl(val);if(!r)return;
@@ -1307,49 +1253,47 @@ function onUrlChange() {
     document.getElementById('badgeSV').classList.add('show');
     document.getElementById('zoomWrap').classList.remove('dim');
     document.getElementById('previewBtn').classList.add('show');
-    const btn=document.getElementById('dlBtn');
     btn.className='dl-btn';btn.textContent='⬇ Download Panorama (Tile Stitch)';
 
   } else if(r.panoId&&r.panoType==='user'){
     currentDet=r;
     document.getElementById('userPanoId').textContent=r.panoId;
     const hasToken=!!r.lh3Url;
-    const hasAndroidBridge = !!window.AndroidTokenFetcher;
-    // Show token auto-fetch note if bridge available and no token yet
-    const tokenNote = !hasToken && hasAndroidBridge
-      ? ' · ⚡ will auto-fetch token'
-      : (!hasToken ? ' · ⚠ no token — use Maps step' : ' · ✓ direct URL');
-    document.getElementById('userSource').textContent=
-      `↳ User 360° · ${r.source}` + tokenNote;
+    const hasAndroidBridge=!!window.AndroidTokenFetcher;
+    const tokenNote = hasToken
+      ? ' · ✓ direct URL'
+      : (hasAndroidBridge ? ' · ⚡ auto-fetch' : ' · ⚠ no token');
+    document.getElementById('userSource').textContent=`↳ User 360° · ${r.source}` + tokenNote;
     document.getElementById('badgeUser').classList.add('show');
     document.getElementById('zoomWrap').classList.add('dim');
     if(hasToken) document.getElementById('previewBtn').classList.add('show');
-    const btn=document.getElementById('dlBtn');
     btn.className='dl-btn user';
-    btn.textContent = hasToken
+    btn.textContent=hasToken
       ? '⬇ Download User Panorama (Full-Res)'
-      : (hasAndroidBridge ? '⬇ Download (Auto-Fetch Token)' : '⬇ Download User Panorama (Full-Res)');
-    // Only show manual maps box if no bridge available
-    if(!hasToken && !hasAndroidBridge) showMapsBox(r);
+      : '⬇ Download (Auto-Fetch Token)';
 
+  // FIX #9: Coords-only — disable button with clear label instead of leaving it active
   } else if(!r.panoId&&r.coords){
     document.getElementById('coordsText').textContent=
-      `⚠ Only coordinates (${r.coords.lat.toFixed(5)}, ${r.coords.lng.toFixed(5)}) — use Maps link below.`;
+      `⚠ Only coordinates (${r.coords.lat.toFixed(5)}, ${r.coords.lng.toFixed(5)}) — no panorama ID found.`;
     document.getElementById('badgeCoords').classList.add('show');
-    showMapsBox(r);
+    btn.disabled=true;
+    btn.textContent='⚠ No Panorama ID Found';
   }
 }
+
 function clearAll() {
   document.getElementById('urlInput').value='';
-  document.getElementById('step2Input').value='';
   document.getElementById('urlInput').focus();
-  currentDet=null;currentMapsUrl=null;
-  ['badgeSV','badgeUser','badgeCoords','mapsBox','progressSection'].forEach(id=>
+  currentDet=null;
+  ['badgeSV','badgeUser','badgeCoords','progressSection'].forEach(id=>
     document.getElementById(id).classList.remove('show','active'));
   document.getElementById('zoomWrap').classList.remove('dim');
   document.getElementById('previewBtn').classList.remove('show');
   const btn=document.getElementById('dlBtn');
-  btn.className='dl-btn';btn.textContent='⬇ Download Full-Res Panorama';btn.disabled=false;
+  btn.className='dl-btn';
+  btn.textContent='⬇ Download Full-Res Panorama';
+  btn.disabled=false;
   hideStatus();
 }
 
@@ -1364,12 +1308,9 @@ window.handleSharedUrl = function(url) {
 };
 
 // ═══════════════════════════════════════════
-// KEYBOARD SHORTCUTS
+// KEYBOARD SHORTCUT — Enter to download
 // ═══════════════════════════════════════════
 document.getElementById('urlInput').addEventListener('keydown', e=>{
-  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();startDownload();}
-});
-document.getElementById('step2Input').addEventListener('keydown', e=>{
   if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();startDownload();}
 });
 </script>
