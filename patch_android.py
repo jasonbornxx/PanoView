@@ -195,7 +195,13 @@ if 'WRITE_EXTERNAL_STORAGE' not in manifest:
         "<application",
         '<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />\n'
         '    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />\n'
-        '    <uses-permission android:name="android.permission.INTERNET" />\n'
+        '    <application'
+    )
+# Add INTERNET only if Capacitor hasn't already declared it (avoids duplicate warning)
+if 'android.permission.INTERNET' not in manifest:
+    manifest = manifest.replace(
+        "<application",
+        '<uses-permission android:name="android.permission.INTERNET" />\n'
         '    <application'
     )
 
@@ -514,8 +520,10 @@ else:
         "        } catch (Exception e) {\n"
         "            js = \"window._panoTokenResult&&window._panoTokenResult(null,'error');\";\n"
         "        }\n"
+        "        // Must be final/effectively-final for use inside lambda\n"
+        "        final String finalJs = js;\n"
         "        getBridge().getWebView().post(() ->\n"
-        "            getBridge().getWebView().evaluateJavascript(js, null));\n"
+        "            getBridge().getWebView().evaluateJavascript(finalJs, null));\n"
         "    }\n"
         "\n"
         "    // ── 3. LIFECYCLE ──────────────────────────────────────────────────────\n"
